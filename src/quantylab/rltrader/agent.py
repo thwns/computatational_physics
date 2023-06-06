@@ -1,5 +1,5 @@
 import numpy as np
-from quantylab.rltrader import utils
+from src.quantylab.rltrader import utils
 
 
 class Agent:
@@ -65,8 +65,8 @@ class Agent:
         return (
             self.ratio_hold,
             self.profitloss,
-            (self.environment.get_price() / self.avg_buy_price) - 1 \
-                if self.avg_buy_price > 0 else 0
+            (self.environment.get_price() / self.avg_buy_price) - 1
+            if self.avg_buy_price > 0 else 0
         )
 
     def decide_action(self, pred_value, pred_policy, epsilon):
@@ -147,11 +147,12 @@ class Agent:
                     int(self.max_trading_price / curr_price)
                 )
             # 수수료를 적용하여 총 매수 금액 산정
-            invest_amount = curr_price * (1 + self.TRADING_CHARGE) * trading_unit
+            invest_amount = curr_price * \
+                (1 + self.TRADING_CHARGE) * trading_unit
             if invest_amount > 0:
                 self.avg_buy_price = \
                     (self.avg_buy_price * self.num_stocks + curr_price * trading_unit) \
-                        / (self.num_stocks + trading_unit)  # 주당 매수 단가 갱신
+                    / (self.num_stocks + trading_unit)  # 주당 매수 단가 갱신
                 self.balance -= invest_amount  # 보유 현금을 갱신
                 self.num_stocks += trading_unit  # 보유 주식 수를 갱신
                 self.num_buy += 1  # 매수 횟수 증가
@@ -169,8 +170,8 @@ class Agent:
                 # 주당 매수 단가 갱신
                 self.avg_buy_price = \
                     (self.avg_buy_price * self.num_stocks - curr_price * trading_unit) \
-                        / (self.num_stocks - trading_unit) \
-                            if self.num_stocks > trading_unit else 0
+                    / (self.num_stocks - trading_unit) \
+                    if self.num_stocks > trading_unit else 0
                 self.num_stocks -= trading_unit  # 보유 주식 수를 갱신
                 self.balance += invest_amount  # 보유 현금을 갱신
                 self.num_sell += 1  # 매도 횟수 증가

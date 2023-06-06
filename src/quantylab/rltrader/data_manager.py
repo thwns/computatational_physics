@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 
-from quantylab.rltrader import settings
+from src.quantylab.rltrader import settings
 
 
 COLUMNS_CHART_DATA = ['date', 'open', 'high', 'low', 'close', 'volume']
@@ -27,27 +27,27 @@ COLUMNS_TRAINING_DATA_V1_1 = COLUMNS_TRAINING_DATA_V1 + [
 ]
 
 COLUMNS_TRAINING_DATA_V2 = ['per', 'pbr', 'roe'] + COLUMNS_TRAINING_DATA_V1 + [
-    'market_kospi_ma5_ratio', 'market_kospi_ma20_ratio', 
-    'market_kospi_ma60_ratio', 'market_kospi_ma120_ratio', 
-    'bond_k3y_ma5_ratio', 'bond_k3y_ma20_ratio', 
+    'market_kospi_ma5_ratio', 'market_kospi_ma20_ratio',
+    'market_kospi_ma60_ratio', 'market_kospi_ma120_ratio',
+    'bond_k3y_ma5_ratio', 'bond_k3y_ma20_ratio',
     'bond_k3y_ma60_ratio', 'bond_k3y_ma120_ratio',
 ]
 
 COLUMNS_TRAINING_DATA_V3 = COLUMNS_TRAINING_DATA_V2 + [
     'ind', 'ind_diff', 'ind_ma5', 'ind_ma10', 'ind_ma20', 'ind_ma60', 'ind_ma120',
     'inst', 'inst_diff', 'inst_ma5', 'inst_ma10', 'inst_ma20', 'inst_ma60', 'inst_ma120',
-    'foreign', 'foreign_diff', 'foreign_ma5', 'foreign_ma10', 'foreign_ma20', 
+    'foreign', 'foreign_diff', 'foreign_ma5', 'foreign_ma10', 'foreign_ma20',
     'foreign_ma60', 'foreign_ma120',
 ]
 COLUMNS_TRAINING_DATA_V3 = list(map(
     lambda x: x if x != 'close_lastclose_ratio' else 'diffratio', COLUMNS_TRAINING_DATA_V3))
 
 COLUMNS_TRAINING_DATA_V4 = [
-    'diffratio', 'high_close_ratio', 'low_close_ratio', 'open_lastclose_ratio', 
-    'volume_lastvolume_ratio', 'trans_price_exp', 'trans_price_exp_ma5', 
+    'diffratio', 'high_close_ratio', 'low_close_ratio', 'open_lastclose_ratio',
+    'volume_lastvolume_ratio', 'trans_price_exp', 'trans_price_exp_ma5',
     'close_ma5_ratio', 'close_ma10_ratio', 'close_ma20_ratio', 'close_ma60_ratio', 'close_ma120_ratio',
     'volume_ma5_ratio', 'volume_ma10_ratio', 'volume_ma20_ratio', 'volume_ma60_ratio', 'volume_ma120_ratio',
-    'close_ubb_ratio', 'close_lbb_ratio', 'macd_signal_ratio', 'rsi', 
+    'close_ubb_ratio', 'close_lbb_ratio', 'macd_signal_ratio', 'rsi',
     'buy_strength_ma5_ratio', 'sell_strength_ma5_ratio', 'prevvalid_cnt',
     'eps_krx', 'bps_krx', 'per_krx', 'pbr_krx', 'roe_krx', 'dps_krx', 'dyr_krx', 'marketcap',
     'ind', 'ind_diff', 'ind_ma5', 'ind_ma10', 'ind_ma20', 'ind_ma60', 'ind_ma120',
@@ -136,23 +136,29 @@ def preprocess(data, ver='v1'):
         data[f'close_ma{window}'] = data['close'].rolling(window).mean()
         data[f'volume_ma{window}'] = data['volume'].rolling(window).mean()
         data[f'close_ma{window}_ratio'] = \
-            (data['close'] - data[f'close_ma{window}']) / data[f'close_ma{window}']
+            (data['close'] -
+             data[f'close_ma{window}']) / data[f'close_ma{window}']
         data[f'volume_ma{window}_ratio'] = \
-            (data['volume'] - data[f'volume_ma{window}']) / data[f'volume_ma{window}']
-        
+            (data['volume'] -
+             data[f'volume_ma{window}']) / data[f'volume_ma{window}']
+
     data['open_lastclose_ratio'] = np.zeros(len(data))
     data.loc[1:, 'open_lastclose_ratio'] = \
-        (data['open'][1:].values - data['close'][:-1].values) / data['close'][:-1].values
-    data['high_close_ratio'] = (data['high'].values - data['close'].values) / data['close'].values
-    data['low_close_ratio'] = (data['low'].values - data['close'].values) / data['close'].values
+        (data['open'][1:].values - data['close']
+         [:-1].values) / data['close'][:-1].values
+    data['high_close_ratio'] = (
+        data['high'].values - data['close'].values) / data['close'].values
+    data['low_close_ratio'] = (
+        data['low'].values - data['close'].values) / data['close'].values
     data['close_lastclose_ratio'] = np.zeros(len(data))
     data.loc[1:, 'close_lastclose_ratio'] = \
-        (data['close'][1:].values - data['close'][:-1].values) / data['close'][:-1].values
+        (data['close'][1:].values - data['close']
+         [:-1].values) / data['close'][:-1].values
     data['volume_lastvolume_ratio'] = np.zeros(len(data))
     data.loc[1:, 'volume_lastvolume_ratio'] = (
-        (data['volume'][1:].values - data['volume'][:-1].values) 
-        / data['volume'][:-1].replace(to_replace=0, method='ffill')\
-            .replace(to_replace=0, method='bfill').values
+        (data['volume'][1:].values - data['volume'][:-1].values)
+        / data['volume'][:-1].replace(to_replace=0, method='ffill')
+        .replace(to_replace=0, method='bfill').values
     )
 
     if ver == 'v1.1':
@@ -160,20 +166,22 @@ def preprocess(data, ver='v1'):
             data[f'inst_ma{window}'] = data['close'].rolling(window).mean()
             data[f'frgn_ma{window}'] = data['volume'].rolling(window).mean()
             data[f'inst_ma{window}_ratio'] = \
-                (data['close'] - data[f'inst_ma{window}']) / data[f'inst_ma{window}']
+                (data['close'] -
+                 data[f'inst_ma{window}']) / data[f'inst_ma{window}']
             data[f'frgn_ma{window}_ratio'] = \
-                (data['volume'] - data[f'frgn_ma{window}']) / data[f'frgn_ma{window}']
+                (data['volume'] -
+                 data[f'frgn_ma{window}']) / data[f'frgn_ma{window}']
         data['inst_lastinst_ratio'] = np.zeros(len(data))
         data.loc[1:, 'inst_lastinst_ratio'] = (
             (data['inst'][1:].values - data['inst'][:-1].values)
-            / data['inst'][:-1].replace(to_replace=0, method='ffill')\
-                .replace(to_replace=0, method='bfill').values
+            / data['inst'][:-1].replace(to_replace=0, method='ffill')
+            .replace(to_replace=0, method='bfill').values
         )
         data['frgn_lastfrgn_ratio'] = np.zeros(len(data))
         data.loc[1:, 'frgn_lastfrgn_ratio'] = (
             (data['frgn'][1:].values - data['frgn'][:-1].values)
-            / data['frgn'][:-1].replace(to_replace=0, method='ffill')\
-                .replace(to_replace=0, method='bfill').values
+            / data['frgn'][:-1].replace(to_replace=0, method='ffill')
+            .replace(to_replace=0, method='bfill').values
         )
 
     return data
@@ -193,7 +201,7 @@ def load_data(code, date_from, date_to, ver='v2'):
                 stock_filename = filename
             elif 'market' in filename:
                 market_filename = filename
-        
+
         chart_data, training_data = load_data_v4_1(
             os.path.join(data_dir, stock_filename),
             os.path.join(data_dir, market_filename),
@@ -201,7 +209,7 @@ def load_data(code, date_from, date_to, ver='v2'):
         )
         if ver == 'v4.1':
             return chart_data, training_data
-        
+
         tips_filename = ''
         taylor_us_filename = ''
         data_dir = os.path.join(settings.BASE_DIR, 'data', 'v4.2')
@@ -231,7 +239,7 @@ def load_data_v1_v2(code, date_from, date_to, ver):
 
     # 데이터 전처리
     df = preprocess(df)
-    
+
     # 기간 필터링
     df['date'] = df['date'].str.replace('-', '')
     df = df[(df['date'] >= date_from) & (df['date'] <= date_to)]
@@ -247,12 +255,13 @@ def load_data_v1_v2(code, date_from, date_to, ver):
     elif ver == 'v1.1':
         training_data = df[COLUMNS_TRAINING_DATA_V1_1]
     elif ver == 'v2':
-        df.loc[:, ['per', 'pbr', 'roe']] = df[['per', 'pbr', 'roe']].apply(lambda x: x / 100)
+        df.loc[:, ['per', 'pbr', 'roe']] = df[[
+            'per', 'pbr', 'roe']].apply(lambda x: x / 100)
         training_data = df[COLUMNS_TRAINING_DATA_V2]
         training_data = training_data.apply(np.tanh)
     else:
         raise Exception('Invalid version.')
-    
+
     return chart_data, training_data.values
 
 
@@ -265,27 +274,29 @@ def load_data_v3_v4(code, date_from, date_to, ver):
 
     # 시장 데이터
     df_marketfeatures = pd.read_csv(
-        os.path.join(settings.BASE_DIR, 'data', ver, 'marketfeatures.csv'), 
+        os.path.join(settings.BASE_DIR, 'data', ver, 'marketfeatures.csv'),
         thousands=',', header=0, converters={'date': lambda x: str(x)})
-    
+
     # 종목 데이터
     df_stockfeatures = None
     for filename in os.listdir(os.path.join(settings.BASE_DIR, 'data', ver)):
         if filename.startswith(code):
             df_stockfeatures = pd.read_csv(
-                os.path.join(settings.BASE_DIR, 'data', ver, filename), 
+                os.path.join(settings.BASE_DIR, 'data', ver, filename),
                 thousands=',', header=0, converters={'date': lambda x: str(x)})
             break
 
     # 시장 데이터와 종목 데이터 합치기
-    df = pd.merge(df_stockfeatures, df_marketfeatures, on='date', how='left', suffixes=('', '_dup'))
+    df = pd.merge(df_stockfeatures, df_marketfeatures,
+                  on='date', how='left', suffixes=('', '_dup'))
     df = df.drop(df.filter(regex='_dup$').columns.tolist(), axis=1)
 
     # 날짜 오름차순 정렬
     df = df.sort_values(by='date').reset_index(drop=True)
 
     # NaN 처리
-    df = df.fillna(method='ffill').fillna(method='bfill').reset_index(drop=True)
+    df = df.fillna(method='ffill').fillna(
+        method='bfill').reset_index(drop=True)
     df = df.fillna(0)
 
     # 기간 필터링
@@ -295,7 +306,8 @@ def load_data_v3_v4(code, date_from, date_to, ver):
 
     # 데이터 조정
     if ver == 'v3':
-        df.loc[:, ['per', 'pbr', 'roe']] = df[['per', 'pbr', 'roe']].apply(lambda x: x / 100)
+        df.loc[:, ['per', 'pbr', 'roe']] = df[[
+            'per', 'pbr', 'roe']].apply(lambda x: x / 100)
 
     # 차트 데이터 분리
     chart_data = df[COLUMNS_CHART_DATA]
@@ -307,7 +319,8 @@ def load_data_v3_v4(code, date_from, date_to, ver):
     if ver == 'v4':
         from sklearn.preprocessing import RobustScaler
         from joblib import dump, load
-        scaler_path = os.path.join(settings.BASE_DIR, 'scalers', f'scaler_{ver}.joblib')
+        scaler_path = os.path.join(
+            settings.BASE_DIR, 'scalers', f'scaler_{ver}.joblib')
         scaler = None
         if not os.path.exists(scaler_path):
             scaler = RobustScaler()
@@ -338,7 +351,8 @@ def load_data_v4_1(stock_data_path, market_data_path, date_from, date_to):
     df = pd.merge(df_stock, df_market, on='date', how='left')
     df = df[(df['date'] >= date_from) & (df['date'] <= date_to)]
     df = df[COLUMNS_CHART_DATA + COLUMNS_TRAINING_DATA_V4_1]
-    df = df.fillna(method='ffill').fillna(method='bfill').reset_index(drop=True)
+    df = df.fillna(method='ffill').fillna(
+        method='bfill').reset_index(drop=True)
     df = df.fillna(0)
     return df[COLUMNS_CHART_DATA], df[COLUMNS_TRAINING_DATA_V4_1].values
 
@@ -358,11 +372,14 @@ def load_data_v4_2(df_v4_1, stock_data_path, market_data_path):
         import json
         with open(market_data_path) as f:
             df_taylor_us = pd.DataFrame(**json.load(f))
-    df = pd.merge(df_v4_1, df_tips.rename(columns={'value': 'tips'}), on='date', how='left')
-    df = pd.merge(df, df_taylor_us.rename(columns={'taylor': 'taylor_us'}), on='date', how='left')
+    df = pd.merge(df_v4_1, df_tips.rename(
+        columns={'value': 'tips'}), on='date', how='left')
+    df = pd.merge(df, df_taylor_us.rename(
+        columns={'taylor': 'taylor_us'}), on='date', how='left')
     df[['tips', 'taylor_us']] = df[['tips', 'taylor_us']] / 100
     COLUMNS_TRAINING_DATA = COLUMNS_TRAINING_DATA_V4_1 + ['tips', 'taylor_us']
     df = df[COLUMNS_CHART_DATA + COLUMNS_TRAINING_DATA]
-    df = df.fillna(method='ffill').fillna(method='bfill').reset_index(drop=True)
+    df = df.fillna(method='ffill').fillna(
+        method='bfill').reset_index(drop=True)
     df = df.fillna(0)
     return df[COLUMNS_CHART_DATA], df[COLUMNS_TRAINING_DATA].values
